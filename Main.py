@@ -18,11 +18,11 @@ targetDB={'host':"192.168.80.130","user":"trustie","passwd":"1234","port":3306,"
 
 TargetConn = MySQLdb.connect(host=targetDB["host"],user=targetDB["user"],passwd=targetDB["passwd"],port=targetDB["port"])
 
-handleSqlCountPart1 = 'select relative_memo_id from '
+handleSqlCountPart1 = 'select DISTINCT relative_memo_id from '
 
 handleSqlCountPart2 = 'where "has_synchronized" = 0 '
 
-handleSqlSource = 'SELECT created_time, replies_num, view_num_crawled, memo_type, view_num_trustie, COUNT(*)  FROM relative_memos WHERE id = memo_id;'
+handleSqlSource = 'SELECT created_time, replies_num, view_num_crawled, memo_type, view_num_trustie, COUNT(*)  FROM relative_memos WHERE id = %s;'
 
 handleSqlUpdate = ' SET created_time = %s, replies_num = %s, view_num_crawled = %s, memo_type = %s, view_num_trustie = %s, has_synchronized = 1 WHERE relative_memo_id = %s;'
 
@@ -31,15 +31,16 @@ dicTable = {'tmp_created_time':'','tmp_replies_num':'','tmp_view_num_crawled':''
 def main():
     cur = TargetConn.cursor()
     TargetConn.select_db(targetDB["database"])
-    for num in range(1,70):
+    for num in range(1,71):
         sqlOfCount = handleSqlCountPart1 +"`relative_memo_to_open_source_projects_"+ "num`" + handleSqlCountPart2
+        print sqlOfCount
         sqlOfUpdate = "update"+"relative_memo_to_open_source_projects_"+"num"+handleSqlUpdate
         count = cur.execute(sqlOfCount)
-        if count > 0:
-            result = cur.fetchone()
-            TargetConn.commit()
+        result = cur.fetchall()
+        TargetConn.commit()
         for ans in result:
-            countMemos = cur.execute(handleSqlSource)
+            countMemos = cur.execute(handleSqlSource,ans)
+            logger.info(countMemos)
             resultOfMenos = cur.fetchone()
             TargetConn.commit()
             tmp_created_time = resultOfMenos[0]
@@ -49,10 +50,7 @@ def main():
             tmp_view_num_trustie = resultOfMenos[4]
             countRelativeMemos = cur.execute(sqlOfUpdate,tmp_created_time,tmp_replies_num,tmp_view_num_crawled,tmp_memo_type,tmp_view_num_trustie)
             TargetConn.commit()
-
-
-print  handleSqlCountPart1 +"`relative_memo_to_open_source_projects_"+ "1`" + handleSqlCountPart2
-
+        TargetConn.close()
 
 if  __name__ == '__main__':
     main()
