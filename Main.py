@@ -32,7 +32,7 @@ def main():
     cur = TargetConn.cursor()
     TargetConn.select_db(targetDB["database"])
     for num in range(1,71):
-        sqlOfCount = handleSqlCountPart1 +"`relative_memo_to_open_source_projects_"+ "num`" + handleSqlCountPart2
+        sqlOfCount = handleSqlCountPart1 +"`relative_memo_to_open_source_projects_"+ str(num)+"`" + handleSqlCountPart2
         print sqlOfCount
         sqlOfUpdate = "update"+"relative_memo_to_open_source_projects_"+"num"+handleSqlUpdate
         count = cur.execute(sqlOfCount)
@@ -48,9 +48,12 @@ def main():
             tmp_view_num_crawled = resultOfMenos[2]
             tmp_memo_type = resultOfMenos[3]
             tmp_view_num_trustie = resultOfMenos[4]
-            countRelativeMemos = cur.execute(sqlOfUpdate,tmp_created_time,tmp_replies_num,tmp_view_num_crawled,tmp_memo_type,tmp_view_num_trustie)
+            args = (tmp_created_time , tmp_replies_num , tmp_view_num_crawled ,tmp_memo_type , tmp_view_num_trustie , ans)
+            countRelativeMemos = cur.execute(sqlOfUpdate,args)
+            if countRelativeMemos > 0:
+                logger.info("one record insert success !")
             TargetConn.commit()
-        TargetConn.close()
+    TargetConn.close()
 
 if  __name__ == '__main__':
     main()
