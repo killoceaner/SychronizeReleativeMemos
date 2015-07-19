@@ -34,7 +34,7 @@ def main():
     for num in range(1,71):
         sqlOfCount = handleSqlCountPart1 +"`relative_memo_to_open_source_projects_"+ str(num)+"`" + handleSqlCountPart2
         print sqlOfCount
-        sqlOfUpdate = "update"+"relative_memo_to_open_source_projects_"+"num"+handleSqlUpdate
+        sqlOfUpdate = "update"+" `relative_memo_to_open_source_projects_"+str(num)+"`"+handleSqlUpdate
         count = cur.execute(sqlOfCount)
         result = cur.fetchall()
         TargetConn.commit()
